@@ -1,0 +1,36 @@
+"""
+This Code projects all feature classes from a specific directory
+into feature class BlkGrpDemographics2012's WGS 1984 Web Mercator
+Auxiliary Sphere projection system
+___author___ = Meghan Kulkarni <meghankulkarni2733@gmail.com>
+"""
+
+from tkinter import filedialog
+
+import arcpy
+from arcpy import env
+
+flag = 0
+while flag == 0:
+
+    # This logic is from Stackoverflows below is link
+    # http://stackoverflow.com/questions/9319317/quick-and-easy-file-dialog-in-python
+    file_path = filedialog.askdirectory()
+
+    # print(file_path)
+
+    env.workspace = file_path
+
+    outCS = arcpy.SpatialReference(3857)
+
+    if arcpy.ListFeatureClasses():
+        # print(arcpy.ListFeatureClasses())
+        for x in arcpy.ListFeatureClasses():
+            arcpy.Project_management(x,
+                                     "C:\\Users\\msk160530\\Documents\\"
+                                     "ArcGIS\\Projects\\MeghanK"
+                                     "\\MeghanK.gdb\\" + x,
+                                     outCS)
+            flag = 1
+    else:
+        print("No Feature Classes found....")
