@@ -1,36 +1,64 @@
 """
-This Code Degree Decimals (DD) into Degree Minute and Seconds (DMS)
+This Code Converts DD to DMS
+___author___ = Meghan Kulkarni <msk160530@utdallas.edu>
 """
 
 import math
+ch = 'Y'
 
-x = '65.5432'
-y = '-75.6745'
-y_o = 0
+while ch == 'Y' or ch == 'y':
+    flag = 0
 
-float(x)
-float(y)
+    while flag == 0:
+        try:
+            x = float(input("Enter Degree Latitude:"))
+            y = float(input("Enter Degree Longitude:"))
+            y_o = 0
+            x_o = 0
+            if math.trunc(x) in range(-90, 90) \
+                    and math.trunc(y) in range(-180, 180):
+                if math.trunc(x) < 0:
+                    x_o = x
+                    x *= -1
 
-degree = math.trunc(x)
+                degree = math.trunc(x)
+                minute = math.trunc((x * 60) % 60)
+                seconds = (math.fabs(x) * 3600) % 60
 
-minute = math.trunc((x * 60) % 60)
+                if x_o < 0:
+                    print("-" + str(degree) + "\u00b0" + str(minute) + "'" +
+                          "{:.4f}".format(seconds) + "\"" + " S")
+                else:
+                    print(str(degree) + "\u00b0" + str(minute) + "'" +
+                          "{:.4f}".format(seconds) + "\"" + " N")
 
-seconds = round((math.fabs(x) * 3600) % 60, 2)
+                if math.trunc(y) < 0:
+                    y_o = y
+                    y *= -1
 
-print(str(degree) + "\u00b0" + " " + str(minute) + "'" + " " + str(seconds) + "\"")
+                degree = math.trunc(y)
+                minute = math.trunc((y * 60) % 60)
+                seconds = (math.fabs(y) * 3600) % 60
 
-if math.trunc(y) < 0:
-    y_o = y
-    y *= -1
+                if y_o < 0:
+                    print("-" + str(degree) + "\u00b0" +
+                          str(minute) + "'" + "{:.4f}".format(seconds) +
+                          "\"" + " W")
+                else:
+                    print(str(degree) + "\u00b0" +
+                          str(minute) + "'" + "{:.4f}".format(seconds) +
+                          "\"" + " E")
+                flag = 1
+                break
+            else:
+                print("Invalid Range")
+        except ValueError:
+            print("Invalid Characters in Input....!")
 
+    ch = input("Want to do Another Conversion(Y/N)?")
 
-degree = math.trunc(y)
-
-minute = math.trunc((y * 60) % 60)
-
-seconds = round((math.fabs(y) * 3600) % 60, 2)
-
-if y_o < 0:
-    print("-" + str(degree) + "\u00b0" + " " + str(minute) + "'" + " " + str(seconds) + "\"")
-else:
-    print(str(degree) + "\u00b0" + " " + str(minute) + "'" + " " + str(seconds) + "\"")
+    if ch == 'y' or ch == 'Y':
+        continue
+    else:
+        print("Press Enter to Continue.....")
+        break
