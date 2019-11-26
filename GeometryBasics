@@ -1,0 +1,71 @@
+"""
+__author__ = Meghan Kulkarni <msk160530@utdallas.edu>
+Lab 08 Submission
+This file reads X & Y co-ordinates, creates polygon out of it and calculates area in sq miles
+"""
+
+import arcpy
+
+arcpy.env.workspace = 'C:\\usr\\MeghanK\\Lab9'
+
+
+in_file = 'C:\\usr\\MeghanK\\Lab9\\6317homework.txt'
+
+fc = 'homework.shp'
+
+arcpy.CreateFeatureclass_management(arcpy.env.workspace, fc, "Polyline")
+
+cursor = arcpy.da.InsertCursor(fc, ["SHAPE@"])
+
+fileinput = open(in_file)
+
+point = arcpy.Point()
+
+array1 = arcpy.Array()
+array2 = arcpy.Array()
+
+point1 = arcpy.Point()
+point2 = arcpy.Point()
+
+# Splitting line into 3 parts i.e., ID, X and Y co-ordinate
+# Based on ID either add it to Polyline 1 or Polyline 2
+
+for line in fileinput:
+    point.ID, point.X, point.Y = line.split()
+    if point.ID == 0:
+        point1 = point
+        array1.add(point1)
+    elif point.ID == 1:
+        point2 = point
+        array2.add(point2)
+
+
+polyline1 = arcpy.Polyline(array1)
+polyline2 = arcpy.Polyline(array2)
+
+# Finally add them to cursor
+cursor.insertRow([polyline1])
+cursor.insertRow([polyline2])
+
+fileinput.close()
+
+del cursor
+
+# 2230 WKID for NAD_1983_StatePlane_California_VI_FIPS_0406_Feet
+arcpy.DefineProjection_management('C:\\usr\\MeghanK\\Lab9\\homework.shp', 2230)
+
+g = arcpy.Geometry()
+
+geomList = arcpy.Buffer_analysis("C:\\usr\\MeghanK\\Lab9\\homework.shp",
+                                 g, "0.5 miles", "#", "#", "ALL")
+
+area = 0
+
+for geom in geomList:
+    area += geom.area
+
+# Conversion of Sq Feet to Sq Miles
+
+area *= 0.000000035870
+
+print("Buffered Area (in SQ MILES): {:,.4f}".format(area))
