@@ -1,0 +1,95 @@
+# __author__ = Meghan Kulkarni <msk160530@utdallas.edu>
+# Project Title: Finding optimum route for Metro Rail 
+import arcpy
+
+# Combine 2 shapefiles into one
+arcpy.env.workspace = r'D:\GIS-MS\Fall 2016\GIS Programming Fundamentals\Project'
+arcpy.Merge_management(["pune_india_osm_transport_points.shp", "pune_india_osm_places.shp"], "Combined.shp")
+
+# Add X and Y co-ordinates i.e., Decimal Degree values to points and lines
+arcpy.AddField_management("Combined.shp", "X_CORD", "DOUBLE")
+arcpy.CalculateField_management("Combined.shp", "X_CORD", "!shape.extent.XMax!", "PYTHON_9.3")
+
+arcpy.AddField_management("Combined.shp", "Y_CORD", "DOUBLE")
+arcpy.CalculateField_management("Combined.shp", "Y_CORD", "!shape.extent.YMax!", "PYTHON_9.3")
+ 
+arcpy.AddField_management("pune_india_osm_roads_gen1.shp","X_CORD_STA","DOUBLE")
+arcpy.AddField_management("pune_india_osm_roads_gen1.shp","Y_CORD_STA","DOUBLE")
+arcpy.AddField_management("pune_india_osm_roads_gen1.shp","X_CORD_END","DOUBLE")
+arcpy.AddField_management("pune_india_osm_roads_gen1.shp","X_CORD_END","DOUBLE")
+
+arcpy.CalculateField_management("pune_india_osm_roads_gen1.shp","X_CORD_STA","!SHAPE.FIRSTPOINT.X!","PYTHON_9.3")
+arcpy.CalculateField_management("pune_india_osm_roads_gen1.shp","X_CORD_END","!SHAPE.LASTPOINT.X!","PYTHON_9.3")
+arcpy.CalculateField_management("pune_india_osm_roads_gen1.shp","Y_CORD_STA","!SHAPE.FIRSTPOINT.Y!","PYTHON_9.3")
+arcpy.CalculateField_management("pune_india_osm_roads_gen1.shp","Y_CORD_END","!SHAPE.LASTPOINT.Y!","PYTHON_9.3")
+
+# Creating layer for holding new point features
+spRef = arcpy.SpatialReference("WGS 1984")
+out_Layer = "LatLongLayer"
+arcpy.MakeXYEventLayer_management(r"D:\GIS-MS\Fall 2016\GIS Programming Fundamentals\Project\points.csv", "LAT", "LONG", out_Layer)
+saved_Layer = r"D:\GIS-MS\Fall 2016\GIS Programming Fundamentals\Project\LatLongLayer.lyr"
+arcpy.SaveToLayerFile_management(out_Layer, saved_Layer)
+arcpy.CopyFeatures_management(r"D:\GIS-MS\Fall 2016\GIS Programming Fundamentals\Project\LatLongLayer.lyr",
+                              r"D:\GIS-MS\Fall 2016\GIS Programming Fundamentals\Project\Prominent.shp")
+
+# Buffer Radius updation according to transport, housing or industrial area
+rows = arcpy.UpdateCursor(r"D:\GIS-MS\Fall 2016\GIS Programming Fundamentals\Project\Prominent.shp")
+for row in rows:
+	type = row.getValue("TYPE")
+    if type == 'transport':
+		dist = '1 miles'
+    elif type == 'housing':
+        dist = '2 miles'
+    else:
+        dist = '1.5 miles'
+    row.setValue("BUF_DIST", dist)
+    rows.updateRow(row)
+ del row
+ del rows
+
+# Create Buffers based on BUF_DIST attribute of Prominent.shp file
+with arcpy.da.SearchCursor("Prominent.shp", ["BUF_DIST"]) as cursor:
+	for row in cursor:
+		dist = row[0]
+        arcpy.Buffer_analysis("Prominent", "Prominent_Buffer", dist, "#", "#", "ALL")
+
+# Using search cursor to fetch x an y co-ordinates 
+with arcpy.da.SearchCursor("Prominent.shp", ["TYPE", "X_CORD", "Y_CORD"]) as cursor:
+	for row in cursor:
+		print('{0}, {1}, {2}'.format(row[0], row[1], row[2]))
+		arcpy.Buffer_Analysis("Prominent.shp", "Prominent_Buffer.shp", buffer_distance)
+		buffer_distance = ""
+
+# Adding fields such as Weight Factor, Road Width
+arcpy.AddField_management("Final_Roads.shp", "WT_FACTOR", "SHORT")
+
+# Assigning road width based on road attributes
+arcpy.AddField_management("Final_Roads.shp", "RD_WIDTH", "SHORT")
+where_clause = "class = \'highway\'"
+fc = r'D:\GIS-MS\Fall 2016\GIS Programming Fundamentals\Project\Final_Roads.shp'
+fields = ['oneway', 'bridge', 'rd_width']
+
+with arcpy.da.UpdateCursor(fc, fields, where_clause) as cursor:
+	for row in cursor:
+		if row[0] == 1 and row[1] == 0:
+			row[2] = 2
+        elif row[0] == 0 and row[1] == 1:
+            row[2] = 1
+        elif row[0] == 0 and row[1] == 0:
+            row[2] = 0
+        cursor.updateRow(row)
+
+# Count no of prime locations
+arcpy.AddField_management("Final_Roads.shp", "COUNT", "SHORT")
+fc1 = r'D:\GIS-MS\Fall 2016\GIS Programming Fundamentals\Project\Final_Roads.shp'
+fields1 = ['X_CORD_STA', 'Y_CORD_STA', 'X_CORD_END', 'Y_CORD_END', 'COUNT']
+fc2 = r'D:\GIS-MS\Fall 2016\GIS Programming Fundamentals\Project\Final_Points.shp'
+fields2 = ['X_CORD', 'Y_CORD']
+
+with arcpy.da.UpdateCursor(fc1, fields1) as cursor1:
+	for row1 in cursor1:
+		with arcpy.da.SearchCursor(fc2, fields2) as cursor2:
+			for row2 in cursor2:
+				if (float(row2[0]) >= float(row1[0]) and float(row2[0]) <= float(row1[2])) and (float(row2[1]) >= float(row1[1]) and float(row2[1]) <= float(row1[3])):
+					row1[4] += 1
+		cursor1.updateRow(row1)
