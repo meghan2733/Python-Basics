@@ -1,0 +1,88 @@
+"""
+__author__ = Meghan Kulkarni <msk160530@utdallas.edu>
+Lab 11 Guess the number
+Used padx and pady to place space between Guess and Give me hint button
+"""
+
+from tkinter import *
+from tkinter.simpledialog import *
+from tkinter.messagebox import *
+import random
+
+num_to_guess = 0
+num_guesses = {}
+
+
+# Hint Button function code starts
+def hint_guess():
+    global num_guesses
+    global num_to_guess
+
+    if num_to_guess == 0:
+        num_to_guess = random.randrange(1, 101)
+        min_range = num_to_guess - 5
+        max_range = num_to_guess + 5
+        guessed_num_range = random.randrange(min_range, max_range)
+    else:
+        min_range = num_to_guess - 5
+        max_range = num_to_guess + 5
+        guessed_num_range = random.randrange(min_range, max_range)
+
+    num_guesses.set(num_guesses.get() + 5)
+    showwarning("Hint!", "The answer is within 5 (Plus or minus) of " +
+                str(guessed_num_range))
+
+
+def guess():
+    global num_guesses
+    global num_to_guess
+
+    if num_to_guess == 0:
+        num_to_guess = random.randrange(1, 101)
+
+    guess_val = askinteger("Guess", "Enter a number between 1 and 100")
+    num_guesses.set(num_guesses.get() + 1)
+    if guess_val > num_to_guess:
+        showwarning("Warning", "Number is too big")
+    elif guess_val < num_to_guess:
+        showwarning("Warning", "Number is too small")
+    else:
+        showinfo("Congratulations!", "You got it in:" +
+                 str(num_guesses.get()) + "guesses!")
+        num_guesses.set(0)
+        num_to_guess = random.randrange(1, 101)
+
+
+def main():
+    global num_guesses
+    global num_to_guess
+
+    root = Tk(className="Guess a number between 1 and 100")
+
+    num_guesses = IntVar()
+    num_guesses.set(0)
+    num_to_guess = 0
+
+    button_row = Frame(root)
+    label_row = Label(root)
+
+    guess_button = Button(button_row, text="Guess....",
+                          command=guess, width=20)
+    guess_button.pack(side=LEFT, fill=X, expand=True, padx=20, pady=20)
+    hint_button = Button(button_row, text="Give me a hint...",
+                         command=hint_guess, width=20)
+    hint_button.pack(side=LEFT, fill=X, expand=True, padx=20, pady=20)
+
+    label_number = Label(label_row, text="Number of guesses:", width=20)
+    label_guesses = Label(label_row, textvariable=num_guesses, width=20)
+    label_number.pack(side=LEFT, fill=X, expand=True, padx=20, pady=20)
+    label_guesses.pack(side=LEFT, fill=X, expand=True, padx=20, pady=20)
+
+    button_row.pack(side=TOP)
+    label_row.pack(side=BOTTOM)
+
+    root.mainloop()
+
+
+if __name__ == "__main__":
+    main()
