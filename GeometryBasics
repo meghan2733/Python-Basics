@@ -1,6 +1,5 @@
 """
 __author__ = Meghan Kulkarni <msk160530@utdallas.edu>
-Lab 08 Submission
 This file reads X & Y co-ordinates, creates polygon out of it and calculates area in sq miles
 """
 
