@@ -82,6 +82,7 @@ def main():
     label_row.pack(side=BOTTOM)
 
     root.mainloop()
+    
 
 
 if __name__ == "__main__":
