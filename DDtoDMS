@@ -1,0 +1,36 @@
+"""
+This Code Degree Decimals (DD) into Degree Minute and Seconds (DMS)
+"""
+
+import math
+
+x = '65.5432'
+y = '-75.6745'
+y_o = 0
+
+float(x)
+float(y)
+
+degree = math.trunc(x)
+
+minute = math.trunc((x * 60) % 60)
+
+seconds = round((math.fabs(x) * 3600) % 60, 2)
+
+print(str(degree) + "\u00b0" + " " + str(minute) + "'" + " " + str(seconds) + "\"")
+
+if math.trunc(y) < 0:
+    y_o = y
+    y *= -1
+
+
+degree = math.trunc(y)
+
+minute = math.trunc((y * 60) % 60)
+
+seconds = round((math.fabs(y) * 3600) % 60, 2)
+
+if y_o < 0:
+    print("-" + str(degree) + "\u00b0" + " " + str(minute) + "'" + " " + str(seconds) + "\"")
+else:
+    print(str(degree) + "\u00b0" + " " + str(minute) + "'" + " " + str(seconds) + "\"")
